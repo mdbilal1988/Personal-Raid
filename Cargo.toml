@@ -1,0 +1,41 @@
+[package]
+name = "shardnet"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Networking (libp2p & tokio)
+libp2p = { version = "0.54.1", features = ["macros", "tokio", "tcp", "dns", "noise", "yamux", "quic", "gossipsub", "kad", "rendezvous", "request-response", "identify", "ping", "cbor"] }
+tokio = { version = "1.37.0", features = ["full"] }
+tokio-util = { version = "0.7.10", features = ["codec", "io"] }
+futures = "0.3.30"
+
+# Cryptography & Identity
+rand = "0.8.5"
+sha2 = "0.10.8"
+aes-gcm = "0.10.3"
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+bip39 = { version = "2.0.0", features = ["rand"] }
+hkdf = "0.12.4"
+hmac = "0.12.1"
+sharks = "0.5.0" # Shamir Secret Sharing
+
+# Storage & Erasure Coding
+reed-solomon-erasure = "6.0.0"
+
+# Serialization & Utilities
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+base64 = "0.22.0"
+thiserror = "1.0.58"
+anyhow = "1.0.81"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+async-trait = "0.1.80"
+bytes = "1.6.0"
+parking_lot = "0.12.1"
+
+governor = "0.6.3" # Rate limiter
+tempfile = "3.27.0"
+bincode = "1.3.3"
+clap = { version = "4.4.7", features = ["derive"] }
