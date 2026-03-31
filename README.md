@@ -11,6 +11,8 @@ ShardNet is a decentralized, RAID-style storage daemon built in Rust. It shards 
 *   **Sync & Self-Healing**: Implements a global Tokio rate-limiter (Throttled Sync Loop) capped at 1MB/s for "invisible" background processing. Includes "Lazy Re-encryption" logic that triggers when the Master Key rotates.
 *   **UI Dashboard**: A React + Tailwind CSS dashboard built with Tauri. Features a Radial Health Graph indicating the $K/N$ Quorum status and a Live Bandwidth SVG monitor.
 
+![ShardNet Dashboard](assets/dashboard.png)
+
 ---
 
 ## 🚀 Getting Started
