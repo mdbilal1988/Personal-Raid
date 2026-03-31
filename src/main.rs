@@ -1,8 +1,8 @@
 pub mod crypto;
+pub mod daemon;
 pub mod network;
 pub mod storage;
 pub mod sync;
-pub mod daemon;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -45,8 +45,7 @@ async fn main() -> Result<()> {
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::INFO)
         .finish();
-    tracing::subscriber::set_global_default(subscriber)
-        .expect("setting default subscriber failed");
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
     let cli = Cli::parse();
 
@@ -65,12 +64,18 @@ async fn main() -> Result<()> {
 
             d.run().await?;
         }
-        Commands::Join { invitation, storage_dir } => {
+        Commands::Join {
+            invitation,
+            storage_dir,
+        } => {
             info!("Joining ShardNet from Invitation...");
             let d = daemon::Daemon::join_from_invitation(invitation, storage_dir).await?;
             d.run().await?;
         }
-        Commands::RotateKey { new_seed, storage_dir } => {
+        Commands::RotateKey {
+            new_seed,
+            storage_dir,
+        } => {
             info!("Rotating Master Key...");
             let d = daemon::Daemon::new_admin(new_seed, storage_dir).await?;
             d.rotate_master_key(new_seed).await?;

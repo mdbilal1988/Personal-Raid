@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use reed_solomon_erasure::galois_8::ReedSolomon;
-use sha2::{Digest, Sha256};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -19,7 +19,11 @@ impl Shard {
         let mut hasher = Sha256::new();
         hasher.update(&data);
         let checksum: [u8; 32] = hasher.finalize().into();
-        Self { index, data, checksum }
+        Self {
+            index,
+            data,
+            checksum,
+        }
     }
 
     /// Verifies the shard data against its stored checksum.
@@ -37,7 +41,13 @@ pub trait StorageEngine {
     fn shard_file(&self, content: &[u8], k: usize, n: usize) -> Result<Vec<Shard>>;
 
     /// Reconstructs the original file content from a subset of shards.
-    fn reconstruct_file(&self, shards: &[Option<Shard>], k: usize, n: usize, original_len: usize) -> Result<Vec<u8>>;
+    fn reconstruct_file(
+        &self,
+        shards: &[Option<Shard>],
+        k: usize,
+        n: usize,
+        original_len: usize,
+    ) -> Result<Vec<u8>>;
 
     /// Saves a shard to local disk.
     fn save_shard(&self, file_id: &str, shard: &Shard) -> Result<()>;
@@ -95,14 +105,22 @@ impl StorageEngine for LocalStorageEngine {
         rs.encode(&mut shards)
             .map_err(|e| anyhow!("Reed-Solomon encoding failed: {:?}", e))?;
 
-        let final_shards = shards.into_iter().enumerate().map(|(i, data)| {
-            Shard::new(i, data)
-        }).collect();
+        let final_shards = shards
+            .into_iter()
+            .enumerate()
+            .map(|(i, data)| Shard::new(i, data))
+            .collect();
 
         Ok(final_shards)
     }
 
-    fn reconstruct_file(&self, shards: &[Option<Shard>], k: usize, n: usize, original_len: usize) -> Result<Vec<u8>> {
+    fn reconstruct_file(
+        &self,
+        shards: &[Option<Shard>],
+        k: usize,
+        n: usize,
+        original_len: usize,
+    ) -> Result<Vec<u8>> {
         if shards.len() != n {
             return Err(anyhow!("Expected {} shards array slots", n));
         }
@@ -158,8 +176,8 @@ impl StorageEngine for LocalStorageEngine {
         let path = self.shard_path(file_id, shard.index);
 
         // Serialize the shard containing checksum and data
-        let encoded = bincode::serialize(shard)
-            .map_err(|e| anyhow!("Failed to serialize shard: {}", e))?;
+        let encoded =
+            bincode::serialize(shard).map_err(|e| anyhow!("Failed to serialize shard: {}", e))?;
 
         fs::write(&path, encoded)?;
         Ok(())
@@ -206,7 +224,9 @@ mod tests {
         recovered_shards[3] = None;
 
         // Reconstruct
-        let reconstructed = engine.reconstruct_file(&recovered_shards, k, n, content.len()).unwrap();
+        let reconstructed = engine
+            .reconstruct_file(&recovered_shards, k, n, content.len())
+            .unwrap();
         assert_eq!(content.as_slice(), reconstructed.as_slice());
     }
 

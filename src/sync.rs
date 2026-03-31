@@ -12,7 +12,13 @@ const MAX_BYTES_PER_SECOND: u32 = 1_048_576;
 
 /// Throttled synchronizer for background rebalancing and lazy re-encryption.
 pub struct ThrottledSync {
-    rate_limiter: Arc<RateLimiter<governor::state::NotKeyed, governor::state::InMemoryState, governor::clock::DefaultClock>>,
+    rate_limiter: Arc<
+        RateLimiter<
+            governor::state::NotKeyed,
+            governor::state::InMemoryState,
+            governor::clock::DefaultClock,
+        >,
+    >,
     storage_engine: Arc<dyn StorageEngine + Send + Sync>,
 }
 
@@ -78,14 +84,18 @@ impl ThrottledSync {
         self.throttle(total_bytes_read).await;
 
         // 2. Reconstruct file data
-        let reconstructed_data = self.storage_engine.reconstruct_file(&loaded_shards, k, n, original_len)?;
+        let reconstructed_data =
+            self.storage_engine
+                .reconstruct_file(&loaded_shards, k, n, original_len)?;
 
         // Assuming the file content has the wrapped file key prepended
         // 32 bytes wrapped -> 60 bytes with 12 byte nonce + 16 byte MAC (Authentication Tag)
         // In a real scenario, the file key might be stored in a metadata manifest.
         // For demonstration, let's assume the first 60 bytes of the data is the wrapped file key.
         if reconstructed_data.len() < 60 {
-            return Err(anyhow!("Reconstructed data too small to contain wrapped key"));
+            return Err(anyhow!(
+                "Reconstructed data too small to contain wrapped key"
+            ));
         }
 
         let old_wrapped_key = &reconstructed_data[0..60];

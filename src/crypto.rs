@@ -131,25 +131,32 @@ impl KeySplitter {
         let dealer = sharks.dealer(secret);
         let shares: Vec<Share> = dealer.take(n as usize).collect();
         // Convert to bytes for easier transmission/storage
-        let encoded_shares: Vec<Vec<u8>> = shares.into_iter().map(|s| {
-            // sharks `Share` implements `Into<Vec<u8>>` and `From<Vec<u8>>`
-            Vec::from(&s)
-        }).collect();
+        let encoded_shares: Vec<Vec<u8>> = shares
+            .into_iter()
+            .map(|s| {
+                // sharks `Share` implements `Into<Vec<u8>>` and `From<Vec<u8>>`
+                Vec::from(&s)
+            })
+            .collect();
         Ok(encoded_shares)
     }
 
     /// Recovers a secret from a set of shares.
     pub fn recover(shares: &[Vec<u8>], k: u8) -> Result<Vec<u8>> {
         let sharks = Sharks(k);
-        let decoded_shares: Result<Vec<Share>, _> = shares.iter().map(|s| {
-            if s.is_empty() {
-                return Err(anyhow!("Empty share"));
-            }
-            // In the sharks crate, Share is created using from
-            Share::try_from(s.as_slice()).map_err(|_| anyhow!("Invalid share format"))
-        }).collect();
+        let decoded_shares: Result<Vec<Share>, _> = shares
+            .iter()
+            .map(|s| {
+                if s.is_empty() {
+                    return Err(anyhow!("Empty share"));
+                }
+                // In the sharks crate, Share is created using from
+                Share::try_from(s.as_slice()).map_err(|_| anyhow!("Invalid share format"))
+            })
+            .collect();
 
-        let secret = sharks.recover(&decoded_shares?)
+        let secret = sharks
+            .recover(&decoded_shares?)
             .map_err(|e| anyhow!("Failed to recover secret: {:?}", e))?;
         Ok(secret)
     }
@@ -206,7 +213,12 @@ mod tests {
         assert_eq!(secret.as_slice(), recovered1.as_slice());
 
         // Recover with 4 shares
-        let subset2 = vec![shares[0].clone(), shares[1].clone(), shares[2].clone(), shares[3].clone()];
+        let subset2 = vec![
+            shares[0].clone(),
+            shares[1].clone(),
+            shares[2].clone(),
+            shares[3].clone(),
+        ];
         let recovered2 = KeySplitter::recover(&subset2, k).unwrap();
         assert_eq!(secret.as_slice(), recovered2.as_slice());
     }

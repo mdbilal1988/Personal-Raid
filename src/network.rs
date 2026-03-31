@@ -1,8 +1,7 @@
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use libp2p::{
-    gossipsub, identify, kad, ping, rendezvous, request_response,
-    swarm::NetworkBehaviour,
+    gossipsub, identify, kad, ping, rendezvous, request_response, swarm::NetworkBehaviour,
 };
 use serde::{Deserialize, Serialize};
 
